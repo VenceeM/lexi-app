@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "start": "nodemon src/index.js",
-    "test": "mocha ./src/tests/**/*.test.js"
+    "test": "mocha ./src/tests/**/*.test.js",
+    "seed": "node seeds/DefaultAccount.js"
   },
   "keywords": [],
   "author": "",

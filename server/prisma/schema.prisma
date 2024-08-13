@@ -23,12 +23,25 @@ model Users {
 
   user_information UserInformations?
   refresh_token    RefreshTokens[]
+  invalid_tokens   InvalidTokens[]
+
+  status     String    @default("active")
+  deleted_at DateTime?
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("users")
 }
 
 model Roles {
-  id   Int     @id @default(autoincrement())
-  name String
-  user Users[]
+  id         Int      @id @default(autoincrement())
+  name       String
+  user       Users[]
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("roles")
 }
 
 model UserInformations {
@@ -41,6 +54,11 @@ model UserInformations {
 
   user_id Int   @unique
   user    Users @relation(fields: [user_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("user_informations")
 }
 
 model RefreshTokens {
@@ -48,4 +66,21 @@ model RefreshTokens {
   refresh_token String
   user_id       Int
   user          Users  @relation(fields: [user_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("refresh_tokens")
+}
+
+model InvalidTokens {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  user           Users    @relation(fields: [user_id], references: [id])
+  access_token   String
+  expirationTime String
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+
+  @@map("invalid_tokens")
 }

@@ -1,5 +1,12 @@
 import { Router } from "express";
-import { getUserByIdController, getUsersController, signUp } from '../../controllers/user/userController.js'
+import {
+    getUserByIdController,
+    getUsersController,
+    insertUserInformationController,
+    getUserInformationController,
+    updateUserController,
+    deleteAccountController
+} from '../../controllers/user/userController.js'
 
 const userRoute = Router();
 
@@ -7,19 +14,19 @@ const userRoute = Router();
 userRoute.get('/users', getUsersController);
 
 // Get user by id
-userRoute.get('/user/:id', getUserByIdController);
-
-// Account Registration
-userRoute.post('/user/sign-up', signUp);
+userRoute.get('/user/information', getUserByIdController);
 
 // Creation of user information
-userRoute.post('/user/create-information');
+userRoute.post('/user/create-information', insertUserInformationController);
+
+// // Get user information
+// userRoute.get('/user/information', getUserInformationController)
 
 // Update user
-userRoute.post('/user/update/:id');
+userRoute.put('/user/update/:userId', updateUserController);
 
 //Delete user
-userRoute.delete('/user/delete/:id');
+userRoute.put('/user/delete/:userId', deleteAccountController);
 
 
 export default userRoute;
