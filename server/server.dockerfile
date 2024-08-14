@@ -1,4 +1,5 @@
-FROM node:alpine
+
+FROM mcr.microsoft.com/devcontainers/javascript-node
 
 WORKDIR /app
 
@@ -13,5 +14,4 @@ RUN npx prisma generate
 COPY ./ ./
 
 EXPOSE 4000
-
-CMD [ "node", "src/index.js" ]
+CMD ["npm", "start"]
