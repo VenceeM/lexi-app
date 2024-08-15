@@ -14,7 +14,7 @@ const userRoute = Router();
 userRoute.get('/users', getUsersController);
 
 // Get user by id
-userRoute.get('/user/informations', getUserByIdController);
+userRoute.get('/user/information', getUserByIdController);
 
 // Creation of user information
 userRoute.post('/user/create-information', insertUserInformationController);
