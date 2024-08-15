@@ -8,4 +8,10 @@ sudo apt upgrade -y
 cd /workspaces/server
 
 npm install
+
+npx prisma init
+npx prisma generate
+npx prisma migrate dev --name init-migrate
+npm run seed
+
 npm start

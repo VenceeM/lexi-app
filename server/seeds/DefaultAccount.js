@@ -5,15 +5,40 @@ const primsa = new PrismaClient();
 const main = async () => {
     try {
 
-        await primsa.roles.createMany({
-            data: [
-                { name: 'admin' },
-                { name: 'member' }
-            ]
+        await primsa.roles.upsert({
+            where: {
+                id: 1
+            },
+            update: {
+                name: 'admin'
+            },
+            create: {
+                name: 'admin'
+            }
         })
 
-        await primsa.users.create({
-            data: {
+        await primsa.roles.upsert({
+            where: {
+                id: 2
+            },
+            update: {
+                name: 'member'
+            },
+            create: {
+                name: 'member'
+            }
+        })
+
+        await primsa.users.upsert({
+            where: {
+                email: "admin@example.com"
+            },
+            update: {
+                email: 'admin@example.com',
+                password: '@Admin123456',
+                role_id: 1
+            },
+            create: {
                 email: 'admin@example.com',
                 password: '@Admin123456',
                 role_id: 1

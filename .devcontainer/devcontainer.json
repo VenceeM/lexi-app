@@ -4,7 +4,7 @@
 	"name": "Ubuntu",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"dockerComposeFile": [
-		"../docker-compose.yaml"
+		"../docker-compose.dev.yaml"
 	],
 	"service": "dev-box",
 	"shutdownAction": "stopCompose",
@@ -97,7 +97,8 @@
 	// "features": {},
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [
-		4000
+		4000,
+		5432
 	]
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "uname -a",
