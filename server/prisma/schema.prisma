@@ -24,6 +24,8 @@ model Users {
   user_information UserInformations?
   refresh_token    RefreshTokens[]
   invalid_tokens   InvalidTokens[]
+  project          Projects[]
+  project_member   ProjectMember[]
 
   status     String    @default("active")
   deleted_at DateTime?
@@ -83,4 +85,26 @@ model InvalidTokens {
   updated_at     DateTime @updatedAt
 
   @@map("invalid_tokens")
+}
+
+model ProjectMember {
+  id         Int      @id @default(autoincrement())
+  user_id    Int
+  user       Users    @relation(fields: [user_id], references: [id])
+  project_id Int
+  project    Projects @relation(fields: [project_id], references: [id])
+
+  @@map("project_members")
+}
+
+model Projects {
+  id               Int             @id @default(autoincrement())
+  name             String          @unique
+  max_member_count Int             @default(5)
+  owner_user_id    Int
+  owner_user       Users           @relation(fields: [owner_user_id], references: [id])
+  status           String          @default("active")
+  project_member   ProjectMember[]
+
+  @@map("projects")
 }

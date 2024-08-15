@@ -4,6 +4,7 @@ import cors from 'cors'
 import { config } from 'dotenv'
 import authRoute from './routes/auth/authRoute.js';
 import userRoute from './routes/user/userRoute.js';
+import projectRoute from './routes/project/projectRoute.js'
 import { middleWare } from './controllers/auth/authController.js'
 config()
 
@@ -16,6 +17,7 @@ const apiV1 = '/api/v1';
 
 app.use(apiV1 + '/auth', authRoute);
 app.use(apiV1, middleWare, userRoute);
+app.use(apiV1, middleWare, projectRoute)
 
 const PORT = process.env.SERVER_PORT || 4000
 app.listen(PORT, () => {
