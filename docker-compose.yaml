@@ -1,17 +1,35 @@
 services:
-  app-server:
-    container_name: app-server
-    image: app-server
-    volumes:
-      - ./server:/app
-      - /app/node_modules
+  # app-server:
+  #   container_name: app-server
+  #   image: app-server
+  #   # volumes:
+  #   #   - ./server:/app
+  #   #   - /app/node_modules
+  #   build:
+  #     context: ./server
+  #     dockerfile: server.dockerfile
+  #   ports:
+  #     - 4000:4000
+  #   env_file:
+  #     - ./server/.env
+
+  dev-box:
+    container_name: dev-box
+    # image: mcr.microsoft.com/devcontainers/base:jammy
     build:
-      context: ./server
-      dockerfile: server.dockerfile
-    ports:
-      - 4000:4000
-    env_file:
-      - ./server/.env
+      context: .
+      dockerfile: dev.dockerfile
+    volumes:
+      - .:/workspaces:cachec
+      - ./server:/workspaces/server
+      # - ~/.gitconfig:/root/.gitconfig
+      # - ~/.ssh:/root/.ssh
+      # ports:
+      #   - 4000:4000
+    command: sleep infinity
+    network_mode: service:appdb
+    # env_file:
+    #   - ./server/.env
 
   appdb:
     container_name: appdb
@@ -21,8 +39,8 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: lw20wTYNW55DK15fEU1Q
       POSTGRES_DB: lexi_db
-    ports:
-      - 5432:5432
+    # ports:
+    #   - 5432:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
 
