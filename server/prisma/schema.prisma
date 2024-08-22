@@ -14,12 +14,14 @@ datasource db {
 }
 
 model Users {
-  id       Int    @id @default(autoincrement())
-  email    String @unique
-  password String
+  id       Int     @id @default(autoincrement())
+  email    String  @unique
+  password String?
 
   role_id Int
   role    Roles @relation(fields: [role_id], references: [id])
+
+  google_id Int?
 
   user_information UserInformations?
   refresh_token    RefreshTokens[]
@@ -87,12 +89,14 @@ model InvalidTokens {
   @@map("invalid_tokens")
 }
 
+// Project Members
 model ProjectMember {
-  id         Int      @id @default(autoincrement())
+  id         Int                  @id @default(autoincrement())
   user_id    Int
-  user       Users    @relation(fields: [user_id], references: [id])
+  user       Users                @relation(fields: [user_id], references: [id])
   project_id Int
-  project    Projects @relation(fields: [project_id], references: [id])
+  project    Projects             @relation(fields: [project_id], references: [id])
+  status     ProjectMemberStatus? @default(PENDING)
 
   @@map("project_members")
 }
@@ -103,8 +107,25 @@ model Projects {
   max_member_count Int             @default(5)
   owner_user_id    Int
   owner_user       Users           @relation(fields: [owner_user_id], references: [id])
-  status           String          @default("active")
+  status           ProjectStatus?  @default(ACTIVE)
   project_member   ProjectMember[]
 
   @@map("projects")
+}
+
+// Project Members
+enum ProjectMemberStatus {
+  INVITED
+  PENDING
+  APPROVED
+  REJECTED
+  INACTIVE
+  BANNED
+  REMOVED
+}
+
+// Project Status
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
 }
