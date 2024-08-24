@@ -1,8 +1,10 @@
 import jwt from 'jsonwebtoken'
 import { revealPassword } from '../../utils/passwordUtils.js'
-import { PrismaClient } from '@prisma/client'
+import { PrismaClient, UserStatus } from '@prisma/client'
 import { config } from 'dotenv'
 import { hashPassword } from '../../utils/passwordUtils.js'
+import { generateOtp, verifyOtp } from '../../utils/otp.js'
+import { sendEmail } from '../../utils/sendGrid.js'
 
 config()
 
@@ -88,7 +90,8 @@ export const loginService = async (email, password) => {
     try {
         const user = await prisma.users.findUnique({
             where: {
-                email: email
+                email: email,
+                status: UserStatus.ACTIVE
             }
         });
 
@@ -160,20 +163,164 @@ export const logoutService = async (accessToken, userId, expirationTime) => {
     }
 }
 
-//Sign up
-export const userSignUp = async (email, password, role_id = 2) => {
 
+//Sign up
+export const userSignUp = async (email, password, firstName, middleName, lastName, gender, birthdate) => {
+    const role_id = 2;
     try {
+        const signUpObject = {
+            result: null,
+            message: null
+        }
         const passwordHash = await hashPassword(password);
-        const user = prisma.users.create({
+
+        const { otp } = await generateOtp()
+
+        if (!otp) {
+            signUpObject.message = 'Something went wrong'
+            return signUpObject
+        }
+
+        const user = await prisma.users.create({
             data: {
                 email: email,
                 password: passwordHash,
-                role_id: role_id
+                role_id: role_id,
+                user_information: {
+                    create: {
+                        first_name: firstName,
+                        middle_name: middleName,
+                        last_name: lastName,
+                        gender: gender,
+                        birthdate: birthdate
+                    }
+                },
+                otp: {
+                    create: {
+                        otp_secret: otp
+                    }
+                }
+            },
+            include: {
+                user_information: true
             }
         })
-        return user;
+
+        await sendEmail(user.email, 'OTP', otp)
+
+        signUpObject.message = null
+        signUpObject.result = user
+
+        return signUpObject;
     } catch (error) {
         console.error(error);
+    }
+}
+
+export const resendOtpService = async (userId, email, oldOtp) => {
+
+    try {
+
+        const otpObject = {
+            result: null,
+            message: null
+        }
+        if (!userId) {
+            otpObject.message = 'Something went wrong'
+            return otpObject
+        }
+
+        const { otp } = await generateOtp()
+
+        if (!otp) {
+            otpObject.message = 'Something went wrong'
+            return otpObject
+        }
+
+
+        const getOtp = await prisma.otp.findFirst({
+            where: {
+                user_id: Number(userId)
+            }
+        })
+
+
+        const result = await prisma.otp.upsert({
+            where: {
+                otp_secret: String(oldOtp)
+            },
+            update: {
+                otp_secret: otp
+            },
+            create: {
+                otp_secret: otp,
+                user_id: userId
+            }
+        })
+
+        await sendEmail(email, 'OTP', otp)
+
+        otpObject.message = null
+        otpObject.result = result
+        return otpObject
+
+    } catch (error) {
+        console.error(error);
+
+    }
+}
+
+export const otpService = async (userId, otp) => {
+
+    try {
+        const otpObject = {
+            result: null,
+            message: null
+        }
+        const result = await prisma.otp.findFirst({
+            where: {
+                user_id: userId,
+                otp_secret: String(otp)
+            }
+        })
+
+        if (!result) {
+            otpObject.message = 'Invalid otps'
+            return otpObject
+        }
+
+        // const otpUtil = verifyOtp(otp, result.otp_secret)
+        // console.log(otpUtil);
+
+        // if (!otpUtil) {
+        //     otpObject.message = 'Invalid otp'
+        //     return otpObject
+        // }
+
+
+        const user = await prisma.users.update({
+            where: {
+                id: userId,
+                status: UserStatus.PENDING
+            },
+            data: {
+                status: UserStatus.ACTIVE
+            }
+        })
+
+        await prisma.otp.delete({
+            where: {
+                id: result.id
+            }
+        })
+
+        otpObject.message = null
+        otpObject.result = user
+        return otpObject
+
+
+    } catch (error) {
+        console.error(error);
+
     }
 }

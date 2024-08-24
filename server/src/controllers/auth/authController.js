@@ -1,4 +1,4 @@
-import { loginService, logoutService, userSignUp, refreshTokenService } from '../../services/auth/auth.js'
+import { loginService, logoutService, userSignUp, refreshTokenService, otpService, resendOtpService } from '../../services/auth/auth.js'
 import { responseUtil } from '../../utils/responseUtil.js'
 import { auth } from '../../middleware/auth.js'
 import { getUserByEmail } from '../../services/user/userService.js'
@@ -104,12 +104,21 @@ export const logout = async (req, res) => {
     }
 }
 
+
+/**
+ *  first_name: firstName,
+                middle_name: middleName,
+                last_name: lastName,
+                age: age,
+                birthdate: birthDate,
+                user_id: userId
+ */
 export const signUp = async (req, res) => {
 
-    const { email, password } = req.body;
+    const { email, password, firstName, middleName, lastName, gender, birthdate } = req.body;
     try {
 
-        if (!email || !password) {
+        if (!email || !password || !firstName || !middleName || !lastName || !gender || !birthdate) {
             return res.status(400).json(responseUtil(false, null, 'All fields are required.'))
         }
 
@@ -126,9 +135,49 @@ export const signUp = async (req, res) => {
             return res.status(400).json(responseUtil(false, null, 'The email you provided is already registered.'))
         }
 
-        const user = await userSignUp(email, password);
+        const user = await userSignUp(email, password, firstName, middleName, lastName, gender, birthdate);
         return res.status(201).json(responseUtil(true, user))
     } catch (error) {
         return res.status(500).json({ message: error.message })
+    }
+}
+
+export const otpController = async (req, res) => {
+    const { userId, otp } = req.body
+    try {
+        if (!userId || !otp) {
+            return res.status(400).json(responseUtil(false, null, 'All fields are required.'))
+        }
+
+        const { result, message } = await otpService(userId, otp)
+        if (message) {
+            return res.status(400).json(responseUtil(false, null, message))
+        }
+
+        return res.status(200).json(responseUtil(true, result))
+
+    } catch (error) {
+        return res.status(500).json(responseUtil(false, null, error.message))
+    }
+}
+
+// Resend otp
+export const resendOtpController = async (req, res) => {
+    const { userId, email, oldOtp } = req.body
+    try {
+        if (!userId || !email) {
+            return res.status(400).json(responseUtil(false, null, 'All fields are required.'))
+        }
+
+        const { result, message } = await resendOtpService(userId, email, oldOtp)
+
+        if (message) {
+            return res.status(400).json(responseUtil(false, null, message))
+        }
+
+        return res.status(200).json(responseUtil(true, null))
+
+    } catch (error) {
+        return res.status(500).json(responseUtil(false, null, error.message))
     }
 }

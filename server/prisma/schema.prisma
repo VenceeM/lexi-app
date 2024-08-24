@@ -29,13 +29,21 @@ model Users {
   project          Projects[]
   project_member   ProjectMember[]
 
-  status     String    @default("active")
+  status UserStatus? @default(PENDING)
+
   deleted_at DateTime?
 
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  otp        Otp[]
 
   @@map("users")
+}
+
+enum UserStatus {
+  ACTIVE
+  PENDING
+  INACTIVE
 }
 
 model Roles {
@@ -49,11 +57,11 @@ model Roles {
 }
 
 model UserInformations {
-  id          Int    @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   first_name  String
   middle_name String
   last_name   String
-  age         Int
+  gender      String?
   birthdate   String
 
   user_id Int   @unique
@@ -97,6 +105,8 @@ model ProjectMember {
   project_id Int
   project    Projects             @relation(fields: [project_id], references: [id])
   status     ProjectMemberStatus? @default(PENDING)
+  created_at DateTime             @default(now())
+  updated_at DateTime             @updatedAt
 
   @@map("project_members")
 }
@@ -109,6 +119,8 @@ model Projects {
   owner_user       Users           @relation(fields: [owner_user_id], references: [id])
   status           ProjectStatus?  @default(ACTIVE)
   project_member   ProjectMember[]
+  created_at       DateTime        @default(now())
+  updated_at       DateTime        @updatedAt
 
   @@map("projects")
 }
@@ -128,4 +140,18 @@ enum ProjectMemberStatus {
 enum ProjectStatus {
   ACTIVE
   INACTIVE
+}
+
+// OTP Table
+model Otp {
+  id         Int    @id @default(autoincrement())
+  otp_secret String @unique
+
+  user_id Int
+  users   Users @relation(fields: [user_id], references: [id])
+
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  @@map("otp")
 }
